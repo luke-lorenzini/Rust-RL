@@ -11,7 +11,7 @@ fn main() {
 
     init(&mut q, &mut r, &mut ns);
 
-    let epochs = 100_000;
+    let epochs = 1_000;
 
     let mut rng = rand::thread_rng();
     let mut state = rng.gen_range(0..states);
@@ -23,9 +23,9 @@ fn main() {
     }
 
     for _ in 0..epochs-1 {
-        state = stuff(state, &mut q, &r, &ns);
+        state = calculate(state, &mut q, &r, &ns);
         while state != termination_state {
-            state = stuff(state, &mut q, &r, &ns);
+            state = calculate(state, &mut q, &r, &ns);
         }
     }
 
@@ -68,7 +68,7 @@ fn get_path(state: usize, q: &Vec<Vec<f64>>, ns: &Vec<Vec<usize>>) -> usize {
     next_state
 }
 
-fn stuff(state: usize, q: &mut Vec<Vec<f64>>, r: &Vec<Vec<i32>>, ns: &Vec<Vec<usize>>) -> usize {
+fn calculate(state: usize, q: &mut Vec<Vec<f64>>, r: &Vec<Vec<i32>>, ns: &Vec<Vec<usize>>) -> usize {
     let alpha = 0.1;
     let gamma = 0.6;
 
@@ -151,6 +151,13 @@ fn get_highest_q_index(state: usize, q: &Vec<Vec<f64>>) -> usize{
     max_col
 }
 
+/**
+ * initialize the matrices
+ * 
+ * q is the q matrix
+ * r is the reward / penalty matrix
+ * ns is the next-state matrix
+ */
 fn init(q: &mut Vec<Vec<f64>>, r: &mut Vec<Vec<i32>>, ns: &mut Vec<Vec<usize>>) {
     const WALL: i32 = -10;
     const REWARD: i32 = 10;
