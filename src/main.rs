@@ -1,17 +1,22 @@
 use rand::Rng;
 
 fn main() {
+    // Actions are up, down, left, right
     let actions = 4;
+
+    // Representation of a 6x6 matrix
     let states = 36;
     let termination_state = states-1;
 
+    // Matrices are 36x4. States enumerated as rows
+    // and columns are actions (up, down, left, right)
     let mut q = vec![vec![0.0; actions]; states];
     let mut r = vec![vec![-1; actions]; states];
     let mut ns = vec![vec![0; actions]; states];
 
     init(&mut q, &mut r, &mut ns);
 
-    let epochs = 1_000;
+    let epochs = 100_000;
 
     let mut rng = rand::thread_rng();
     let mut state = rng.gen_range(0..states);
@@ -159,8 +164,8 @@ fn get_highest_q_index(state: usize, q: &Vec<Vec<f64>>) -> usize{
  * ns is the next-state matrix
  */
 fn init(q: &mut Vec<Vec<f64>>, r: &mut Vec<Vec<i32>>, ns: &mut Vec<Vec<usize>>) {
-    const WALL: i32 = -10;
-    const REWARD: i32 = 10;
+    const WALL: i32 = -10;  // penalty for hitting a wall
+    const REWARD: i32 = 10; // reward for termnation state
     // const TRAP: i32 = -5;
 
     let mut rng = rand::thread_rng();
@@ -172,27 +177,9 @@ fn init(q: &mut Vec<Vec<f64>>, r: &mut Vec<Vec<i32>>, ns: &mut Vec<Vec<usize>>) 
         }
     }
 
-    // r[0][0] = WALL;
-    // r[0][2] = WALL; 
-
-    // r[1][0] = WALL;
-    // r[1][3] = TRAP;
-
-    // r[2][0] = WALL;
-    // r[2][1] = REWARD;
-    // r[2][3] = WALL;
-
-    // r[3][1] = WALL;
-    // r[3][2] = WALL;
-    
-    // r[4][1] = WALL;
-    // r[4][3] = REWARD;
-
-    // r[5][0] = TRAP;
-    // r[5][1] = WALL;
-    // r[5][3] = WALL;
-
-    r[0][0] = WALL;
+    // R is reward matrix. Initialized to -1
+    // update any execptional positions
+    r[0][0] = WALL; // move up from 0,0 is penalty
     r[1][0] = WALL;
     r[2][0] = WALL;
     r[3][0] = WALL;
@@ -220,14 +207,14 @@ fn init(q: &mut Vec<Vec<f64>>, r: &mut Vec<Vec<i32>>, ns: &mut Vec<Vec<usize>>) 
     r[29][3] = WALL;
     r[35][3] = WALL;
 
-    r[29][1] = REWARD;
-    r[34][3] = REWARD;
+    r[29][1] = REWARD;  // move down to reward state
+    r[34][3] = REWARD;  // move right to reward state
 
     // up, down left, right
-    ns[0][0] = 0;
-    ns[0][1] = 6;
-    ns[0][2] = 0;
-    ns[0][3] = 1;
+    ns[0][0] = 0;   // move up from 0,0 to 0 (can't move up from 0,0)
+    ns[0][1] = 6;   // move down from 0,0 to 6
+    ns[0][2] = 0;   // move left from 0,0 to 0 (can't move left from 0,0)
+    ns[0][3] = 1;   // move right from 0,0 to 1
 
     ns[1][0] = 1;
     ns[1][1] = 7;
