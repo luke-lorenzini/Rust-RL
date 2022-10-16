@@ -1,5 +1,96 @@
 use rand::Rng;
 
+struct Xxx {
+    alpha: f64,
+    gamma: f64,
+    epsilon: f64,
+}
+
+impl Xxx {
+    fn new(alpha: f64, gamma: f64, epsilon: f64) -> Xxx {
+        Xxx {
+            alpha,
+            gamma,
+            epsilon,
+        }
+    }
+
+    fn get_action(&self, state: usize, q: &Vec<Vec<f64>>) -> usize {
+        let mut rng = rand::thread_rng();
+        let n2: f64 = rng.gen();
+
+        if n2 < self.epsilon {
+            // action = env.action_space.sample() # Explore action space
+            let actions = q[0].len();
+            let mut rng = rand::thread_rng();
+            rng.gen_range(0..actions)
+        } else {
+            // action = np.argmax(q_table[state]) # Exploit learned values
+            self.get_highest_q_index(state, q)
+        }
+    }
+
+    fn get_next_state(
+        &self,
+        state: usize,
+        q: &mut Vec<Vec<f64>>,
+        r: &Vec<Vec<i32>>,
+        ns: &Vec<Vec<usize>>,
+    ) -> usize {
+        // let gamma = 0.6;
+
+        let action = self.get_action(state, q);
+
+        // Step 3: Based on action, determine next state
+        let next_state = ns[state][action];
+
+        // Step 4: Choose highest action reward from next state
+        let next_action = self.get_highest_reward(next_state, r);
+
+        // Step 5: Update q
+        q[state][action] = q[state][action]
+            + self.alpha
+                * (r[state][action] as f64 + self.gamma * q[next_state][next_action]
+                    - q[state][action]);
+
+        next_state
+    }
+
+    fn get_highest_reward(&self, state: usize, r: &Vec<Vec<i32>>) -> usize {
+        let mut max_value = i32::MIN;
+        // let mut max_value = 0;
+        let mut max_col = 0;
+        for col in 0..r[state].len() {
+            let current_value = r[state][col];
+            if current_value > max_value {
+                max_value = current_value;
+                max_col = col;
+            }
+        }
+
+        // println!("Max Value {}, Max Index {}", max_value, max_col);
+
+        max_col
+    }
+
+    fn get_highest_q_index(&self, state: usize, q: &Vec<Vec<f64>>) -> usize {
+        let mut max_value = f64::MIN;
+        // let mut max_value = 0;
+        let mut max_col = 0;
+        for col in 0..q[state].len() {
+            let current_value = q[state][col];
+            if current_value > max_value {
+                max_value = current_value;
+                max_col = col;
+            }
+        }
+
+        // println!("Max Value {}, Max Index {}", max_value, max_col);
+
+        max_col
+    }
+}
+
 fn main() {
     // Actions are up, down, left, right
     let actions = 4;
@@ -20,6 +111,7 @@ fn main() {
 
     let mut rng = rand::thread_rng();
     let mut state = rng.gen_range(0..states);
+    let rl = Xxx::new(0.1, 0.6, 0.1);
 
     for _ in 0..epochs - 1 {
         // Make sure we don't start in the termination state
@@ -27,9 +119,9 @@ fn main() {
             state = rng.gen_range(0..states);
         }
 
-        state = calculate(state, &mut q, &r, &ns);
+        state = rl.get_next_state(state, &mut q, &r, &ns);
         while state != termination_state {
-            state = calculate(state, &mut q, &r, &ns);
+            state = rl.get_next_state(state, &mut q, &r, &ns);
         }
     }
 
@@ -70,49 +162,6 @@ fn get_path(state: usize, q: &Vec<Vec<f64>>, ns: &Vec<Vec<usize>>) -> usize {
     next_state
 }
 
-fn calculate(
-    state: usize,
-    q: &mut Vec<Vec<f64>>,
-    r: &Vec<Vec<i32>>,
-    ns: &Vec<Vec<usize>>,
-) -> usize {
-    let alpha = 0.1;
-    let gamma = 0.6;
-
-    let action = get_action(state, q);
-
-    // Step 3: Based on action, determine next state
-    let next_state = ns[state][action];
-
-    // Step 4: Choose highest action reward from next state
-    let next_action = get_highest_reward(next_state, r);
-
-    // Step 5: Update q
-    q[state][action] = q[state][action]
-        + alpha * (r[state][action] as f64 + gamma * q[next_state][next_action] - q[state][action]);
-
-    next_state
-}
-
-fn get_action(state: usize, q: &Vec<Vec<f64>>) -> usize {
-    let epsilon = 0.1;
-    let mut rng = rand::thread_rng();
-    let n2: f64 = rng.gen();
-    // println!("n2 {}", n2);
-
-    // let action;
-
-    if n2 < epsilon {
-        // action = env.action_space.sample() # Explore action space
-        let actions = q[0].len();
-        let mut rng = rand::thread_rng();
-        rng.gen_range(0..actions)
-    } else {
-        // action = np.argmax(q_table[state]) # Exploit learned values
-        get_highest_q_index(state, q)
-    }
-}
-
 fn display_matrix(mat: &Vec<Vec<f64>>) {
     for state in 0..mat.len() {
         for action in 0..mat[0].len() {
@@ -120,40 +169,6 @@ fn display_matrix(mat: &Vec<Vec<f64>>) {
         }
         println!();
     }
-}
-
-fn get_highest_reward(state: usize, r: &Vec<Vec<i32>>) -> usize {
-    let mut max_value = i32::MIN;
-    // let mut max_value = 0;
-    let mut max_col = 0;
-    for col in 0..r[state].len() {
-        let current_value = r[state][col];
-        if current_value > max_value {
-            max_value = current_value;
-            max_col = col;
-        }
-    }
-
-    // println!("Max Value {}, Max Index {}", max_value, max_col);
-
-    max_col
-}
-
-fn get_highest_q_index(state: usize, q: &Vec<Vec<f64>>) -> usize {
-    let mut max_value = f64::MIN;
-    // let mut max_value = 0;
-    let mut max_col = 0;
-    for col in 0..q[state].len() {
-        let current_value = q[state][col];
-        if current_value > max_value {
-            max_value = current_value;
-            max_col = col;
-        }
-    }
-
-    // println!("Max Value {}, Max Index {}", max_value, max_col);
-
-    max_col
 }
 
 /**
