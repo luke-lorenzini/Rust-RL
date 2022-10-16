@@ -6,7 +6,7 @@ fn main() {
 
     // Representation of a 6x6 matrix
     let states = 36;
-    let termination_state = states-1;
+    let termination_state = states - 1;
 
     // Matrices are 36x4. States enumerated as rows
     // and columns are actions (up, down, left, right)
@@ -27,7 +27,7 @@ fn main() {
         // println!("Chose wrong start state");
     }
 
-    for _ in 0..epochs-1 {
+    for _ in 0..epochs - 1 {
         state = calculate(state, &mut q, &r, &ns);
         while state != termination_state {
             state = calculate(state, &mut q, &r, &ns);
@@ -57,14 +57,14 @@ fn get_path(state: usize, q: &Vec<Vec<f64>>, ns: &Vec<Vec<usize>>) -> usize {
     }
 
     let next_state = ns[state][max_col];
-    
+
     let direction: &str;
 
     match max_col {
         0 => direction = "Up",
         1 => direction = "Down",
         2 => direction = "Left",
-        _ => direction = "Right"
+        _ => direction = "Right",
     }
 
     // println!("Max Value {}, Next State {}", max_value, next_state);
@@ -73,7 +73,12 @@ fn get_path(state: usize, q: &Vec<Vec<f64>>, ns: &Vec<Vec<usize>>) -> usize {
     next_state
 }
 
-fn calculate(state: usize, q: &mut Vec<Vec<f64>>, r: &Vec<Vec<i32>>, ns: &Vec<Vec<usize>>) -> usize {
+fn calculate(
+    state: usize,
+    q: &mut Vec<Vec<f64>>,
+    r: &Vec<Vec<i32>>,
+    ns: &Vec<Vec<usize>>,
+) -> usize {
     let alpha = 0.1;
     let gamma = 0.6;
 
@@ -86,7 +91,8 @@ fn calculate(state: usize, q: &mut Vec<Vec<f64>>, r: &Vec<Vec<i32>>, ns: &Vec<Ve
     let next_action = get_highest_reward(next_state, r);
 
     // Step 5: Update q
-    q[state][action] = q[state][action] + alpha * (r[state][action] as f64 + gamma * q[next_state][next_action] - q[state][action]);
+    q[state][action] = q[state][action]
+        + alpha * (r[state][action] as f64 + gamma * q[next_state][next_action] - q[state][action]);
 
     next_state
 }
@@ -104,8 +110,7 @@ fn get_action(state: usize, q: &Vec<Vec<f64>>) -> usize {
         let actions = q[0].len();
         let mut rng = rand::thread_rng();
         action = rng.gen_range(0..actions);
-    }
-    else {
+    } else {
         // action = np.argmax(q_table[state]) # Exploit learned values
         action = get_highest_q_index(state, &q);
     }
@@ -122,7 +127,7 @@ fn display_matrix(mat: &Vec<Vec<f64>>) {
     }
 }
 
-fn get_highest_reward(state: usize, r: &Vec<Vec<i32>>) -> usize{
+fn get_highest_reward(state: usize, r: &Vec<Vec<i32>>) -> usize {
     let mut max_value = i32::MIN;
     // let mut max_value = 0;
     let mut max_col = 0;
@@ -139,7 +144,7 @@ fn get_highest_reward(state: usize, r: &Vec<Vec<i32>>) -> usize{
     max_col
 }
 
-fn get_highest_q_index(state: usize, q: &Vec<Vec<f64>>) -> usize{
+fn get_highest_q_index(state: usize, q: &Vec<Vec<f64>>) -> usize {
     let mut max_value = f64::MIN;
     // let mut max_value = 0;
     let mut max_col = 0;
@@ -158,15 +163,15 @@ fn get_highest_q_index(state: usize, q: &Vec<Vec<f64>>) -> usize{
 
 /**
  * initialize the matrices
- * 
+ *
  * q is the q matrix
  * r is the reward / penalty matrix
  * ns is the next-state matrix
  */
 fn init(q: &mut Vec<Vec<f64>>, r: &mut Vec<Vec<i32>>, ns: &mut Vec<Vec<usize>>) {
-    const WALL: i32 = -10;  // penalty for hitting a wall
+    const WALL: i32 = -10; // penalty for hitting a wall
     const REWARD: i32 = 10; // reward for termnation state
-    // const TRAP: i32 = -5;
+                            // const TRAP: i32 = -5;
 
     let mut rng = rand::thread_rng();
     // let n2: f64 = rng.gen_range(0.0..0.001);
@@ -207,14 +212,14 @@ fn init(q: &mut Vec<Vec<f64>>, r: &mut Vec<Vec<i32>>, ns: &mut Vec<Vec<usize>>) 
     r[29][3] = WALL;
     r[35][3] = WALL;
 
-    r[29][1] = REWARD;  // move down to reward state
-    r[34][3] = REWARD;  // move right to reward state
+    r[29][1] = REWARD; // move down to reward state
+    r[34][3] = REWARD; // move right to reward state
 
     // up, down left, right
-    ns[0][0] = 0;   // move up from 0,0 to 0 (can't move up from 0,0)
-    ns[0][1] = 6;   // move down from 0,0 to 6
-    ns[0][2] = 0;   // move left from 0,0 to 0 (can't move left from 0,0)
-    ns[0][3] = 1;   // move right from 0,0 to 1
+    ns[0][0] = 0; // move up from 0,0 to 0 (can't move up from 0,0)
+    ns[0][1] = 6; // move down from 0,0 to 6
+    ns[0][2] = 0; // move left from 0,0 to 0 (can't move left from 0,0)
+    ns[0][3] = 1; // move right from 0,0 to 1
 
     ns[1][0] = 1;
     ns[1][1] = 7;
