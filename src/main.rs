@@ -16,18 +16,17 @@ fn main() {
 
     init(&mut q, &mut r, &mut ns);
 
-    let epochs = 100_000;
+    let epochs = 1_000;
 
     let mut rng = rand::thread_rng();
     let mut state = rng.gen_range(0..states);
 
-    // Make sure we don't start in the termination state
-    while state == termination_state {
-        state = rng.gen_range(0..states);
-        // println!("Chose wrong start state");
-    }
-
     for _ in 0..epochs - 1 {
+        // Make sure we don't start in the termination state
+        while state == termination_state {
+            state = rng.gen_range(0..states);
+        }
+
         state = calculate(state, &mut q, &r, &ns);
         while state != termination_state {
             state = calculate(state, &mut q, &r, &ns);
@@ -58,14 +57,12 @@ fn get_path(state: usize, q: &Vec<Vec<f64>>, ns: &Vec<Vec<usize>>) -> usize {
 
     let next_state = ns[state][max_col];
 
-    let direction: &str;
-
-    match max_col {
-        0 => direction = "Up",
-        1 => direction = "Down",
-        2 => direction = "Left",
-        _ => direction = "Right",
-    }
+    let direction = match max_col {
+        0 => "Up",
+        1 => "Down",
+        2 => "Left",
+        _ => "Right",
+    };
 
     // println!("Max Value {}, Next State {}", max_value, next_state);
     println!("Move {} to state {}", direction, next_state);
@@ -82,7 +79,7 @@ fn calculate(
     let alpha = 0.1;
     let gamma = 0.6;
 
-    let action = get_action(state, &q);
+    let action = get_action(state, q);
 
     // Step 3: Based on action, determine next state
     let next_state = ns[state][action];
@@ -103,19 +100,17 @@ fn get_action(state: usize, q: &Vec<Vec<f64>>) -> usize {
     let n2: f64 = rng.gen();
     // println!("n2 {}", n2);
 
-    let action;
+    // let action;
 
     if n2 < epsilon {
         // action = env.action_space.sample() # Explore action space
         let actions = q[0].len();
         let mut rng = rand::thread_rng();
-        action = rng.gen_range(0..actions);
+        rng.gen_range(0..actions)
     } else {
         // action = np.argmax(q_table[state]) # Exploit learned values
-        action = get_highest_q_index(state, &q);
+        get_highest_q_index(state, q)
     }
-
-    action
 }
 
 fn display_matrix(mat: &Vec<Vec<f64>>) {

@@ -26,7 +26,7 @@ Move Down to state 29
 Move Down to state 35
 ```
 
-This impementation often gets stuck in the get_path() function, which looks like
+This impementation can get stuck in the get_path() function, which looks like:
 
 ```
 Move Left to state 9
