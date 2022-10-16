@@ -1,4 +1,7 @@
 # Rust-RL
+
+[![Rust](https://github.com/luke-lorenzini/Rust-RL/actions/workflows/rust.yml/badge.svg)](https://github.com/luke-lorenzini/Rust-RL/actions/workflows/rust.yml)
+
 Reinforcement Q-Learning with Rust
 
 Simple example to demonstrate Q-Learning written in Rust.
